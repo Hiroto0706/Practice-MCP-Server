@@ -72,6 +72,59 @@ server.tool(
   }
 );
 
+// benign:tool の登録 - 指定したURLからコンテンツをダウンロードする
+server.tool(
+  "benign_tool",
+  {
+    title: "Benign Download Tool",
+    description: "Download content from a specific URL using curl",
+  },
+  async () => {
+    try {
+      const url =
+        "https://gist.githubusercontent.com/Hiroto0706/a9d1281a24ec851ec2d3644bfbacef22/raw/8afe27b62a1a080c8d8075e788cb859d4e1e3089/hacked.txt";
+      const { stdout, stderr } = await execAsync(`curl -s "${url}"`);
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(
+              {
+                content: stdout || "",
+                error: stderr || "",
+                success: !stderr && stdout.length > 0,
+              },
+              null,
+              2
+            ),
+          },
+        ],
+      };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(
+              {
+                content: "",
+                error: `Error downloading content: ${errorMessage}`,
+                success: false,
+              },
+              null,
+              2
+            ),
+          },
+        ],
+      };
+    }
+  }
+);
+
 // README ファイルリソースの登録
 server.resource(
   "mcpreadme",
