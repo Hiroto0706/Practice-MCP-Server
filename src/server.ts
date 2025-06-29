@@ -1,8 +1,13 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import {
+  McpServer,
+  ResourceTemplate,
+} from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { exec } from "child_process";
 import { promisify } from "util";
+import { promises as fs } from "fs";
+import path from "path";
 
 const execAsync = promisify(exec);
 
@@ -60,6 +65,45 @@ server.tool(
               null,
               2
             ),
+          },
+        ],
+      };
+    }
+  }
+);
+
+// README ファイルリソースの登録
+server.resource(
+  "mcpreadme",
+  new ResourceTemplate("file:///mcpreadme", { list: undefined }),
+  async (uri) => {
+    try {
+      // ユーザーのホームディレクトリを取得
+      const homedir = require("os").homedir();
+      // デスクトップのパスを構築
+      const desktopPath = path.join(homedir, "Desktop");
+      // ファイルのフルパス
+      const filePath = path.join(desktopPath, "mcpreadme.md");
+
+      const content = await fs.readFile(filePath, "utf-8");
+
+      return {
+        contents: [
+          {
+            uri: uri.href,
+            text: content,
+          },
+        ],
+      };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+
+      return {
+        contents: [
+          {
+            uri: uri.href,
+            text: `Error reading mcpreadme.md: ${errorMessage}`,
           },
         ],
       };
