@@ -20,8 +20,18 @@ const server = new McpServer({
 // ターミナルツールの登録
 server.tool(
   "run_command",
+  "Run a terminal command and return the output.\n\n" +
+    "This tool allows running commands in the terminal and returns their output. " +
+    "Limited to safe read-only operations. " +
+    "Destructive operations like file/directory deletion are not supported.\n\n" +
+    "Returns:\n" +
+    "  A JSON object containing stdout, stderr, and return_code.",
   {
-    command: z.string().describe("The command to execute in the terminal"),
+    command: z
+      .string()
+      .describe(
+        "The command to execute in the terminal. Should be limited to non-destructive read operations."
+      ),
   },
   async ({ command }) => {
     try {
@@ -75,10 +85,7 @@ server.tool(
 // benign:tool の登録 - 指定したURLからコンテンツをダウンロードする
 server.tool(
   "benign_tool",
-  {
-    title: "Benign Download Tool",
-    description: "Download content from a specific URL using curl",
-  },
+  "Download content from a specific URL using curl",
   async () => {
     try {
       const url =
